@@ -10,3 +10,26 @@ packages:
   - karpenter
   - external-dns
   - cert-manager
+  - aws-load-balancer-controller
+  - metrics-server
+  - cluster-autoscaler
+  - kube-state-metrics
+  - node-exporter
+  - fluent-bit
+  - coredns-config
+  - ebs-csi
+  - efs-csi
+  - secrets-store-csi
+  - external-secrets
+  - kyverno
+  - gatekeeper
+  - prometheus
+  - grafana
+  - loki
+  - tempo
+  - otel-collector
+  - velero
+  - reloader
+  - descheduler
+  - keda
+  - istio-base
