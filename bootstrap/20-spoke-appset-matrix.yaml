@@ -1,0 +1,48 @@
+# VARIANT for the "needed an AppSet controller restart" hypothesis.
+# Same as 20-spoke-appset.yaml, but the cluster generator is nested in a matrix generator.
+# Test: flip the cluster label and check whether this AppSet re-renders WITHOUT a controller restart.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: demo-spoke
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  demo-tenant: demo
+          - list:
+              elements:
+                - blueprint: blueprint
+  template:
+    metadata:
+      name: demo-blueprint
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: demo
+      source:
+        repoURL: REPO_URL
+        targetRevision: REPO_REVISION
+        path: CHART_PATH
+        helm:
+          releaseName: demo
+          valuesObject:
+            repoURL: REPO_URL
+            targetRevision: REPO_REVISION
+            packagesPath: PACKAGES_PATH
+            project: demo
+            destName: '{{ .name }}'
+            disabled: '{{ index .metadata.labels "demo-disabled" | default "false" }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

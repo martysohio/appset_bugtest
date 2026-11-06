@@ -1,0 +1,20 @@
+# AppProject for the demo.
+#  - demo-blueprint renders an ApplicationSet into the control plane (in-cluster / argocd ns),
+#    which needs the instance to allow Argo CD resources to be managed in the control plane.
+#  - demo-package-* deploy a ConfigMap each to the managed cluster CLUSTER_NAME (general-demo).
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: demo
+  namespace: argocd
+spec:
+  description: AppSet stuck-resource repro demo
+  sourceRepos: ["*"]
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: argocd
+    - name: CLUSTER_NAME
+      namespace: demo-workloads
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace

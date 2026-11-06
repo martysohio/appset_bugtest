@@ -1,0 +1,44 @@
+# Spoke ApplicationSet (one per tenant/cluster).
+# Cluster generator => event-driven only (requeueAfter=0). It selects the
+# managed cluster CLUSTER_NAME by its demo-tenant label and renders ONE Application (demo-blueprint)
+# whose Helm valuesObject carries `disabled`, read from the cluster's demo-disabled label.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: demo-spoke
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            demo-tenant: demo
+  template:
+    metadata:
+      name: demo-blueprint
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: demo
+      source:
+        repoURL: REPO_URL
+        targetRevision: REPO_REVISION
+        path: CHART_PATH
+        helm:
+          releaseName: demo
+          valuesObject:
+            repoURL: REPO_URL
+            targetRevision: REPO_REVISION
+            packagesPath: PACKAGES_PATH
+            project: demo
+            destName: '{{ .name }}'
+            disabled: '{{ index .metadata.labels "demo-disabled" | default "false" }}'
+      destination:
+        server: https://kubernetes.default.svc   # control plane (Argo CD resources managed in-cluster)
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
