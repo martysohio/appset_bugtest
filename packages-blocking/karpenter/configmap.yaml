@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: karpenter-demo
+  finalizers:
+    - demo.example.com/block-deletion   # nothing removes this -> app deletion hangs
+data:
+  package: karpenter

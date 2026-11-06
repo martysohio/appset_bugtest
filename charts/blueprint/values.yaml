@@ -1,0 +1,12 @@
+# Overridden by the spoke ApplicationSet via helm.valuesObject (same as the customer setup).
+repoURL: ""
+targetRevision: HEAD
+packagesPath: packages        # path to the packages/ dir inside repoURL
+project: demo
+destName: general-demo        # Akuity cluster the package apps deploy to (spoke passes {{ .name }})
+# Rendered by the spoke AppSet as a *string* ("true"/"false"), like the customer's spokeDisabled.
+disabled: "false"
+packages:
+  - karpenter
+  - external-dns
+  - cert-manager

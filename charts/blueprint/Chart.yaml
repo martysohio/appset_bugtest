@@ -1,0 +1,4 @@
+apiVersion: v2
+name: blueprint
+description: Mimics blueprint-base-compute - renders an ApplicationSet that generates one Application per package
+version: 0.1.0

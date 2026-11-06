@@ -1,0 +1,44 @@
+{{- /*
+  Blueprint AppSet: one package Application per entry in .Values.packages.
+  disabled=true  -> list generator has no elements -> AppSet "generated 0 applications"
+                 -> AppSet deletes every package Application it owns.
+  Note: compare as a string. A templated value arrives as "false", which Helm treats as truthy
+  in a plain `if .Values.disabled` - a common bug in this pattern.
+*/ -}}
+{{- $disabled := eq (toString .Values.disabled) "true" }}
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{ .Release.Name }}-blueprint
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+        {{- if $disabled }} []
+        {{- else }}
+        {{- range .Values.packages }}
+          - name: {{ . }}
+        {{- end }}
+        {{- end }}
+  template:
+    metadata:
+      name: '{{ .Release.Name }}-package-{{`{{ .name }}`}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ .Values.project }}
+      source:
+        repoURL: {{ .Values.repoURL }}
+        targetRevision: {{ .Values.targetRevision }}
+        path: '{{ .Values.packagesPath }}/{{`{{ .name }}`}}'
+      destination:
+        name: {{ .Values.destName }}
+        namespace: demo-workloads
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
